@@ -1,0 +1,232 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+```{r}
+library(tidyverse)
+library(stringr)
+```
+
+string1 <- "This is a string"
+
+```{r}
+c("one", "two", "three")
+
+```
+
+str_length() tells you the number of characters in a string:
+
+```{r}
+str_length(c("a", "R for data science", NA))
+```
+
+ If you want missing values to print as "NA", use str_replace_na()
+ 
+ You can count forward and backward to isolate certain characters:
+ 
+```{r}
+x <- c("Apple", "Banana", "Pear")
+str_sub(x, 1, 3)
+"
+# negative numbers count backwards from end
+str_sub(x, -3, -1)
+
+```
+ 
+ The locale is specified as a ISO 639 language code, which is a two or three letter abbreviation.
+ 
+ 
+ Exercises:
+ 
+```{r}
+
+paste("x", "y")
+
+paste0("x", "y")
+```
+ 
+Paste separates with a space, paste0 does not.
+
+```{r}
+x <- c("a", "abc", "abcd", "abcde", "abcdef")
+l <- str_length(x)
+n <- (l / 2)
+str_sub(x, n, n)
+```
+If it is even number then the choice of the middle number could be one of two.
+
+```{r}
+str_trim(" xyz ")
+str_trim(" xyz ", side = "right")
+```
+
+Regexps are a very terse language that allow you to describe patterns in strings.
+
+str_view() and str_view_all() functions take a character vector and a regular expression, and show you how they match. 
+
+By default, regular expressions will match any part of a string. It’s often useful to anchor the regular expression so that it matches from the start or end of the string. You can use:
+
+^ to match the start of the string.
+$ to match the end of the string.
+
+Exercises:
+
+```{r}
+str_view(stringr::words, "^y", match = TRUE)
+str_view(stringr::words, "x$", match = TRUE)
+str_subset(stringr::words, "^[aeiou]")
+str_subset(stringr::words, "^[ed$]")
+```
+
+There are a number of special patterns that match more than one character. There are four other useful tools:
+
+\d: matches any digit.
+\s: matches any whitespace (e.g. space, tab, newline).
+[abc]: matches a, b, or c.
+[^abc]: matches anything except a, b, or c.
+
+```{r}
+str_view(c("abc", "a.c", "a*c", "a c"), "a[.]c")
+```
+The next step up in power involves controlling how many times a pattern matches:
+
+?: 0 or 1
++: 1 or more
+*: 0 or more
+
+A capturing group stores the part of the string matched by the part of the regular expression inside the parentheses.
+
+```{r}
+str_view(fruit, "(..)\\1", match = TRUE)
+```
+stringr functions that let you:
+
+Determine which strings match a pattern.
+Find the positions of matches.
+Extract the content of matches.
+Replace matches with new values.
+Split a string based on a match.
+
+ If you get stuck trying to create a single regexp that solves your problem, take a step back and think if you could break the problem down into smaller pieces, solving each challenge before moving onto the next one.
+ 
+ To determine if a character vector matches a pattern, use str_detect(). It returns a logical vector the same length as the input:
+ 
+```{r}
+x <- c("apple", "banana", "pear")
+str_detect(x, "e")
+```
+ 
+**when you use a logical vector in a numeric context, FALSE becomes 0 and TRUE becomes 1**
+
+For example, here are two ways to find all words that don’t contain any vowels:
+
+```{r}
+no_vowels_1 <- !str_detect(words, "[aeiou]")
+
+no_vowels_2 <- str_detect(words, "^[^aeiou]+$")
+identical(no_vowels_1, no_vowels_2)
+```
+
+If your regular expression gets overly complicated, try breaking it up into smaller pieces, giving each piece a name, and then combining the pieces with logical operations.
+
+A variation on str_detect() is str_count(): rather than a simple yes or no, it tells you how many matches there are in a string.
+
+```{r}
+words[str_detect(words, "^x|x$")]
+```
+
+```{r}
+
+startwithx <- str_detect(words, "^x")
+endwithx <- str_detect(words, "x$")
+words[startwithx | endwithx]
+```
+
+```{r}
+vowels = str_count(words, "[aeiou]")
+words[which(vowels == max(vowels))]
+```
+
+To extract the actual text of a match, use str_extract(). 
+Example used by author:
+```{r}
+colours <- c("red", "orange", "yellow", "green", "blue", "purple")
+colour_match <- str_c(colours, collapse = "|")
+colour_match
+has_colour <- str_subset(sentences, colour_match)
+matches <- str_extract(has_colour, colour_match)
+head(matches)
+more <- sentences[str_count(sentences, colour_match) > 1]
+str_view_all(more, colour_match) #extracts actual text
+```
+str_extract() gives us the complete match; str_match() gives each individual component.Instead of a character vector, it returns a matrix, with one column for the complete match followed by one column for each group.
+
+str_replace() and str_replace_all() allow you to replace matches with new strings. 
+
+With str_replace_all() you can perform multiple replacements by supplying a named vector:
+```{r}
+x <- c("1 house", "2 cars", "3 people")
+str_replace_all(x, c("1" = "one", "2" = "two", "3" = "three"))
+```
+
+Use str_split() to split a string up into pieces. 
+```{r}
+sentences %>%
+  head(5) %>% 
+  str_split(" ")
+```
+
+str_locate() and str_locate_all() give you the starting and ending positions of each match.
+
+**stringi** is a good learning tool if stringr is giving problems. stringi is more minimal and can be good for getting the hang of the basics.
+
+Factors
+
+categorical variables: variables that have a fixed and known set of possible values. 
+
+```{r}
+library(tidyverse)
+library(forcats)
+```
+
+To create a factor you must start by creating a list of the valid levels:
+
+```{r}
+x1 <- c("Dec", "Apr", "Jan", "Mar")
+month_levels <- c(
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+```
+
+```{r}
+y1 <- factor(x1, levels = month_levels)
+y1
+sort(y1)
+```
+
+```{r}
+x2 <- c("Dec", "Apr", "Jam", "Mar")
+y2 <- factor(x2, levels = month_levels)
+y2
+```
+
+NA shows for misspelled data entry 
+```{r}
+gss_cat
+```
+
